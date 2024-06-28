@@ -12,8 +12,11 @@ import (
 
 func main() {
 	r := gin.Default()
-	//从配置中读取日志配置，初始化日志
-	config.C.InitZapLog()
-	routers.Inirouter(r)
-	srv.Run(r, config.C.ServeConf.Host, config.C.ServeConf.Port)
+	routers.Initrouter(r)
+	// 注册grpc服务
+	grpc := routers.RegisterGrpc()
+	stop := func() {
+		grpc.Stop()
+	}
+	srv.Run(r, config.C.ServeConf.Host, config.C.ServeConf.Port, stop)
 }

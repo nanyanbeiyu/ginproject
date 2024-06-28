@@ -1,6 +1,6 @@
 serve:
-  host: "127.0.0.1"
-  port: ":80"
+  addr: "127.0.0.1:8081"
+  name: "project-api"
 
 zap:
   debugFileName: "D:\\github_project\\ginproject\\logs\\debug\\project-debug.log"
@@ -9,12 +9,3 @@ zap:
   maxSize: 500
   maxAge: 28
   maxBackups: 3
-
-redis:
-  addr: "127.0.0.1:6379"
-  password: ""
-  db: 0
-
-grpc:
-  addr: "127.0.0.1:8080"
-  name: "project-user"

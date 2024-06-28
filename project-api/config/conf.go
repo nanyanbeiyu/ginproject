@@ -5,7 +5,6 @@ package config
 
 import (
 	"carrygpc.com/project-common/logs"
-	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -20,8 +19,8 @@ type Conf struct {
 }
 
 type ServeConf struct {
-	Port string
-	Host string
+	Addr string
+	Name string
 }
 
 type GrpcConf struct {
@@ -45,7 +44,6 @@ func InitConfig() *Conf {
 	}
 	conf.InitZapLog()
 	conf.ServeConf = conf.GetServeConf()
-	conf.GC = conf.GetGrpcConf()
 	return conf
 }
 
@@ -67,22 +65,7 @@ func (c *Conf) InitZapLog() {
 
 func (c *Conf) GetServeConf() *ServeConf {
 	return &ServeConf{
-		Port: c.viper.GetString("serve.port"),
-		Host: c.viper.GetString("serve.host"),
-	}
-}
-
-func (c *Conf) InitRedisConf() *redis.Options {
-	return &redis.Options{
-		Password: c.viper.GetString("redis.password"),
-		Addr:     c.viper.GetString("redis.addr"),
-		DB:       c.viper.GetInt("redis.db"),
-	}
-}
-
-func (c *Conf) GetGrpcConf() *GrpcConf {
-	return &GrpcConf{
-		Addr: c.viper.GetString("grpc.addr"),
-		Name: c.viper.GetString("grpc.name"),
+		Addr: c.viper.GetString("serve.addr"),
+		Name: c.viper.GetString("serve.name"),
 	}
 }

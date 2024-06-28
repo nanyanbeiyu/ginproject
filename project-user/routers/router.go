@@ -6,7 +6,12 @@ package routers
 
 import (
 	"carrygpc.com/project-user/api/user"
+	"carrygpc.com/project-user/config"
+	login_service_v1 "carrygpc.com/project-user/pkg/service/login.service.v1"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
+	"log"
+	"net"
 )
 
 type Router interface {
@@ -24,8 +29,37 @@ func (*RegisterRouter) Router(router Router, r *gin.Engine) {
 	router.Register(r)
 }
 
-func Inirouter(r *gin.Engine) {
+func Initrouter(r *gin.Engine) {
 	router := New()
 	// 路由注册位置
 	router.Router(&user.RouterUser{}, r)
+}
+
+type GcConfig struct {
+	Addr         string
+	RegisterFunc func(server *grpc.Server)
+}
+
+func RegisterGrpc() *grpc.Server {
+	c := GcConfig{
+		Addr: config.C.GC.Addr,
+		RegisterFunc: func(server *grpc.Server) {
+			login_service_v1.RegisterLoginServiceServer(server, login_service_v1.NewLoginService())
+		},
+	}
+
+	s := grpc.NewServer()
+	c.RegisterFunc(s)
+	lis, err := net.Listen("tcp", c.Addr)
+	if err != nil {
+		log.Println("cannot listen")
+	}
+	go func() {
+		err = s.Serve(lis)
+		if err != nil {
+			log.Println("server started error", err)
+			return
+		}
+	}()
+	return s
 }
