@@ -1,0 +1,16 @@
+serve:
+  host: "127.0.0.1"
+  port: ":80"
+
+zap:
+  debugFileName: "D:\\github_project\\ginproject\\logs\\debug\\project-debug.log"
+  infoFileName: "D:\\github_project\\ginproject\\logs\\info\\project-info.log"
+  warnFileName: "D:\\github_project\\ginproject\\logs\\error\\project-error.log"
+  maxSize: 500
+  maxAge: 28
+  maxBackups: 3
+
+redis:
+  addr: "127.0.0.1:6379"
+  password: ""
+  db: 0
