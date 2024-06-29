@@ -6,11 +6,13 @@ package login_service_v1
 import (
 	common "carrygpc.com/project-common"
 	"carrygpc.com/project-user/pkg/dao/redis"
+	"carrygpc.com/project-user/pkg/model"
 	"carrygpc.com/project-user/pkg/repo"
 	"context"
-	"errors"
 	"fmt"
 	"go.uber.org/zap"
+	codes "google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"time"
 )
 
@@ -30,7 +32,7 @@ func (ls *LoginService) GetCaptcha(ctx context.Context, req *CaptchaReq) (*Captc
 	mobile := req.Mobile
 	//2. 校验参数
 	if !common.VerifyMobile(mobile) {
-		return nil, errors.New("手机号格式错误")
+		return nil, status.Error(codes.Code(model.NoLegalMobile), model.GetMsg(model.NoLegalMobile))
 	}
 	//3. 生成随机验证码（随机4位1000-9999或者6位100000-999999）
 	code := common.GenerateRandomCode(6)

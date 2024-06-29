@@ -17,6 +17,7 @@ type Conf struct {
 	viper     *viper.Viper
 	ServeConf *ServeConf
 	GC        *GrpcConf
+	EC        *EtcdConf
 }
 
 type ServeConf struct {
@@ -25,8 +26,14 @@ type ServeConf struct {
 }
 
 type GrpcConf struct {
-	Addr string
-	Name string
+	Addr    string
+	Name    string
+	Version string
+	Weight  int64
+}
+
+type EtcdConf struct {
+	Addrs []string
 }
 
 func InitConfig() *Conf {
@@ -46,6 +53,7 @@ func InitConfig() *Conf {
 	conf.InitZapLog()
 	conf.ServeConf = conf.GetServeConf()
 	conf.GC = conf.GetGrpcConf()
+	conf.GetEtcdConf()
 	return conf
 }
 
@@ -82,7 +90,16 @@ func (c *Conf) InitRedisConf() *redis.Options {
 
 func (c *Conf) GetGrpcConf() *GrpcConf {
 	return &GrpcConf{
-		Addr: c.viper.GetString("grpc.addr"),
-		Name: c.viper.GetString("grpc.name"),
+		Addr:    c.viper.GetString("grpc.addr"),
+		Name:    c.viper.GetString("grpc.name"),
+		Version: c.viper.GetString("grpc.version"),
+		Weight:  c.viper.GetInt64("grpc.weight"),
 	}
+}
+
+func (c *Conf) GetEtcdConf() {
+	ec := &EtcdConf{
+		Addrs: c.viper.GetStringSlice("etcd.addrs"),
+	}
+	c.EC = ec
 }

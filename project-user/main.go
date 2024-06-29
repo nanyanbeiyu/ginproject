@@ -15,6 +15,8 @@ func main() {
 	routers.Initrouter(r)
 	// 注册grpc服务
 	grpc := routers.RegisterGrpc()
+	// 注册etcd服务
+	routers.RegisterEtcdServer()
 	stop := func() {
 		grpc.Stop()
 	}

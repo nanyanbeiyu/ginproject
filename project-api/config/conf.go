@@ -16,6 +16,7 @@ type Conf struct {
 	viper     *viper.Viper
 	ServeConf *ServeConf
 	GC        *GrpcConf
+	EC        *EtcdConf
 }
 
 type ServeConf struct {
@@ -26,6 +27,10 @@ type ServeConf struct {
 type GrpcConf struct {
 	Addr string
 	Name string
+}
+
+type EtcdConf struct {
+	Addrs []string
 }
 
 func InitConfig() *Conf {
@@ -44,6 +49,7 @@ func InitConfig() *Conf {
 	}
 	conf.InitZapLog()
 	conf.ServeConf = conf.GetServeConf()
+	conf.GetEtcdConf()
 	return conf
 }
 
@@ -68,4 +74,11 @@ func (c *Conf) GetServeConf() *ServeConf {
 		Addr: c.viper.GetString("serve.addr"),
 		Name: c.viper.GetString("serve.name"),
 	}
+}
+
+func (c *Conf) GetEtcdConf() {
+	ec := &EtcdConf{
+		Addrs: c.viper.GetStringSlice("etcd.addrs"),
+	}
+	c.EC = ec
 }

@@ -8,6 +8,7 @@ import (
 	loginv1 "carrygpc.com/project-user/pkg/service/login.service.v1"
 	"context"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/status"
 )
 
 type HandlerLogin struct {
@@ -23,7 +24,8 @@ func (*HandlerLogin) GetCaptcha(c *gin.Context) {
 	ctx := context.Background()
 	_, err := UserClient.GetCaptcha(ctx, &loginv1.CaptchaReq{Mobile: mobile})
 	if err != nil {
-		c.JSON(200, result.Fail(2001, err.Error()))
+		fromError, _ := status.FromError(err)
+		c.JSON(200, result.Fail(common.BusinessCode(fromError.Code()), fromError.Message()))
 		return
 	}
 	c.JSON(200, result.Success(nil))

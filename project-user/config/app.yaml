@@ -18,3 +18,9 @@ redis:
 grpc:
   addr: "127.0.0.1:8080"
   name: "project-user"
+  version: "v1"
+  weight: 2
+
+etcd:
+  addrs:
+    - "127.0.0.1:2379"
