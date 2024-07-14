@@ -18,6 +18,7 @@ type Conf struct {
 	ServeConf *ServeConf
 	GC        *GrpcConf
 	EC        *EtcdConf
+	MC        *MysqlConf
 }
 
 type ServeConf struct {
@@ -34,6 +35,14 @@ type GrpcConf struct {
 
 type EtcdConf struct {
 	Addrs []string
+}
+
+type MysqlConf struct {
+	Username string
+	Password string
+	Host     string
+	Port     string
+	Dbname   string
 }
 
 func InitConfig() *Conf {
@@ -54,6 +63,7 @@ func InitConfig() *Conf {
 	conf.ServeConf = conf.GetServeConf()
 	conf.GC = conf.GetGrpcConf()
 	conf.GetEtcdConf()
+	conf.GetMysqlConf()
 	return conf
 }
 
@@ -102,4 +112,15 @@ func (c *Conf) GetEtcdConf() {
 		Addrs: c.viper.GetStringSlice("etcd.addrs"),
 	}
 	c.EC = ec
+}
+
+func (c *Conf) GetMysqlConf() {
+	mc := &MysqlConf{
+		Username: c.viper.GetString("mysql.username"),
+		Password: c.viper.GetString("mysql.password"),
+		Host:     c.viper.GetString("mysql.host"),
+		Port:     c.viper.GetString("mysql.port"),
+		Dbname:   c.viper.GetString("mysql.dbname"),
+	}
+	c.MC = mc
 }

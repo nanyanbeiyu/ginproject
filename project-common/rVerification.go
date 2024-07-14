@@ -14,7 +14,7 @@ func GenerateRandomCode(codeLength int) string {
 	// 随机数生成器的种子
 	rand.Seed(time.Now().UnixNano())
 
-	// 生成6位随机数
+	// 生成codeLength位随机数
 	code := ""
 	for i := 0; i < codeLength; i++ {
 		// 生成0-9之间的随机数

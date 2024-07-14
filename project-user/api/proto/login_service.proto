@@ -8,10 +8,23 @@ message CaptchaReq {
 }
 
 message CaptchaResp {
+  string code = 1;
+}
+
+message RegisterReq{
+  string email = 1;
+  string name = 2;
+  string password = 3;
+  string mobile = 4;
+  string captcha = 5;
+}
+
+message RegisterResp{
 }
 
 service LoginService {
   rpc GetCaptcha(CaptchaReq) returns (CaptchaResp);
+  rpc Register(RegisterReq) returns (RegisterResp);
 }
 
 // protoc --go_out=./gen --go_opt=paths=source_relative --go-grpc_out=./gen --go-grpc_opt=paths=source_relative  login_service.proto

@@ -47,3 +47,9 @@ func (r *RedisCache) Get(key string) (any, error) {
 	}
 	return result, nil
 }
+
+func (r *RedisCache) Delete(key string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	return r.rdb.Del(ctx, key).Err()
+}

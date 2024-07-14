@@ -5,9 +5,9 @@ package user
 
 import (
 	common "carrygpc.com/project-common"
-	"carrygpc.com/project-user/pkg/dao/redis"
+	"carrygpc.com/project-user/internal/dao/redis"
+	"carrygpc.com/project-user/internal/repo"
 	"carrygpc.com/project-user/pkg/model"
-	"carrygpc.com/project-user/pkg/repo"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
