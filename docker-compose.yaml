@@ -26,10 +26,10 @@ services:
     restart: always
     volumes:
       - ${REDIS_DIR}/data:/data
-      - ${REDIS_DIR}/conf/redis.conf:/etc/redis/redis.conf
+      - ${REDIS_DIR}/conf/gredis.conf:/etc/gredis/gredis.conf
     ports:
       - ${REDIS_PORT}:6379
-    command: redis-server /etc/redis/redis.conf
+    command: gredis-server /etc/gredis/gredis.conf
   Etcd:
     container_name: project_etcd
     image: bitnami/etcd:${ETCD_VERSION}

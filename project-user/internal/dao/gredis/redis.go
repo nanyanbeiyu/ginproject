@@ -1,7 +1,7 @@
 /*
 @author: NanYan
 */
-package redis
+package gredis
 
 import (
 	"carrygpc.com/project-user/config"
@@ -32,7 +32,7 @@ func (r *RedisCache) Put(key string, value any, expire time.Duration) error {
 	defer cancel()
 	err := r.rdb.Set(ctx, key, value, expire).Err()
 	if err != nil {
-		log.Println("redis set error:", err)
+		log.Println("gredis set error:", err)
 		return err
 	}
 	return nil

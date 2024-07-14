@@ -5,6 +5,7 @@ package memberDao
 
 import (
 	"carrygpc.com/project-user/internal/data/member"
+	"carrygpc.com/project-user/internal/database"
 	"carrygpc.com/project-user/internal/database/gorms"
 	"context"
 )
@@ -31,8 +32,9 @@ func (m MemberDao) GetMemberByMobile(ctx context.Context, mobile string) (bool, 
 	return count > 0, err
 }
 
-func (m MemberDao) SaveMember(ctx context.Context, member *member.Member) error {
-	return m.conn.Default(ctx).Create(member).Error
+func (m MemberDao) SaveMember(conn database.DbConn, ctx context.Context, member *member.Member) error {
+	m.conn = conn.(*gorms.GormConn)
+	return m.conn.Tx(ctx).Create(member).Error
 }
 
 func NewMemberDao() *MemberDao {

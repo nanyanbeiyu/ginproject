@@ -5,6 +5,7 @@ package organizationDao
 
 import (
 	"carrygpc.com/project-user/internal/data/organization"
+	"carrygpc.com/project-user/internal/database"
 	"carrygpc.com/project-user/internal/database/gorms"
 	"context"
 )
@@ -19,6 +20,7 @@ func NewOrganizationDao() *OrganizationDao {
 	}
 }
 
-func (o OrganizationDao) SaveOrganization(ctx context.Context, org *organization.Organization) error {
-	return o.conn.Default(ctx).Create(org).Error
+func (o OrganizationDao) SaveOrganization(conn database.DbConn, ctx context.Context, org *organization.Organization) error {
+	o.conn = conn.(*gorms.GormConn)
+	return o.conn.Tx(ctx).Create(org).Error
 }

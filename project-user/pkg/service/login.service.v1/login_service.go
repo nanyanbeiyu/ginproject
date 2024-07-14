@@ -7,15 +7,20 @@ import (
 	common "carrygpc.com/project-common"
 	"carrygpc.com/project-common/encrypts"
 	"carrygpc.com/project-common/snowflakeID"
+	"carrygpc.com/project-user/internal/dao/Transaction"
+	"carrygpc.com/project-user/internal/dao/gredis"
 	"carrygpc.com/project-user/internal/dao/memberDao"
 	"carrygpc.com/project-user/internal/dao/organizationDao"
-	"carrygpc.com/project-user/internal/dao/redis"
 	"carrygpc.com/project-user/internal/data/member"
 	"carrygpc.com/project-user/internal/data/organization"
+	"carrygpc.com/project-user/internal/database"
+	"carrygpc.com/project-user/internal/database/tran"
 	"carrygpc.com/project-user/internal/repo"
 	"carrygpc.com/project-user/pkg/model"
 	"context"
+	"errors"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	codes "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,13 +32,15 @@ type LoginService struct {
 	cache            repo.Cache
 	memberRepo       repo.MemberRepo
 	organizationRepo repo.OrganizationRepo
+	transaction      tran.Transaction
 }
 
 func NewLoginService() *LoginService {
 	return &LoginService{
-		cache:            redis.Rc,
+		cache:            gredis.Rc,
 		memberRepo:       memberDao.NewMemberDao(),
 		organizationRepo: organizationDao.NewOrganizationDao(),
+		transaction:      Transaction.NewTransaction(),
 	}
 }
 
@@ -50,7 +57,7 @@ func (ls *LoginService) GetCaptcha(ctx context.Context, req *CaptchaReq) (*Captc
 	go func() {
 		time.Sleep(2 * time.Second)
 		zap.L().Info(fmt.Sprintf("发送验证码：REGISTER_%s : %s", mobile, code))
-		//5. 存储验证码 redis 时间15分钟
+		//5. 存储验证码 gredis 时间15分钟
 		err := ls.cache.Put("REGISTER_"+mobile, code, 15*time.Minute)
 		if err != nil {
 			zap.L().Error(fmt.Sprintf("将验证码存入redis失败：REGISTER_%s : %s cause by: %v", mobile, code, err))
@@ -65,6 +72,11 @@ func (ls *LoginService) Register(ctx context.Context, req *RegisterReq) (*Regist
 	// 1.可以校验参数
 	// 2.校验验证码
 	captchaCode, err := ls.cache.Get("REGISTER_" + req.Mobile)
+
+	if errors.Is(err, redis.Nil) {
+		return nil, status.Error(codes.Code(model.CaptcgaNotExist), model.GetMsg(model.CaptcgaNotExist))
+	}
+
 	if err != nil {
 		zap.L().Error("Register captchaCode get error:", zap.Error(err))
 		return nil, status.Error(codes.Code(model.NoLegalCaptcha), model.GetMsg(model.NoLegalCaptcha))
@@ -109,30 +121,34 @@ func (ls *LoginService) Register(ctx context.Context, req *RegisterReq) (*Regist
 		Name:          req.Name,
 		Mobile:        req.Mobile,
 		Email:         req.Email,
-		LastLoginTime: time.Now().UnixMilli(),
+		LastLoginTime: time.Now(),
 		Status:        1,
 	}
-	err = ls.memberRepo.SaveMember(ctx, mem)
-	if err != nil {
-		zap.L().Error("register save member db err:", zap.Error(err))
-		return &RegisterResp{}, err
-	}
-	org := &organization.Organization{
-		Name:     mem.Name + "个人组织",
-		MemberId: mem.Account,
-		Personal: 1,
-		Avatar:   "https://profile-avatar.csdnimg.cn/30ff829b21d8422db18289abaf318685_qq_46103376.jpg!1",
-	}
-	err = ls.organizationRepo.SaveOrganization(ctx, org)
-	if err != nil {
-		zap.L().Error("register save organization db err:", zap.Error(err))
-		return &RegisterResp{}, err
-	}
-	err = ls.cache.Delete("REGISTER_" + req.Mobile)
-	if err != nil {
-		zap.L().Error("Register captchaCode delete error:", zap.Error(err))
-		return nil, status.Error(codes.Code(model.DBError), model.GetMsg(model.DBError))
-	}
+	err = ls.transaction.Action(func(conn database.DbConn) error {
+		err = ls.memberRepo.SaveMember(conn, ctx, mem)
+		if err != nil {
+			zap.L().Error("register save member db err:", zap.Error(err))
+			return status.Error(codes.Code(model.DBError), model.GetMsg(model.DBError))
+		}
+		org := &organization.Organization{
+			Name:     mem.Name + "个人组织",
+			MemberId: mem.Account,
+			Personal: 1,
+			Avatar:   "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.dtstatic.com%2Fuploads%2Fblog%2F202103%2F31%2F20210331160001_9a852.thumb.1000_0.jpg&refer=http%3A%2F%2Fc-ssl.dtstatic.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1673017724&t=ced22fc74624e6940fd6a89a21d30cc5",
+		}
+		err = ls.organizationRepo.SaveOrganization(conn, ctx, org)
+		if err != nil {
+			zap.L().Error("register save organization db err:", zap.Error(err))
+			return status.Error(codes.Code(model.DBError), model.GetMsg(model.DBError))
+		}
+		err = ls.cache.Delete("REGISTER_" + req.Mobile)
+		if err != nil {
+			zap.L().Error("Register captchaCode delete error:", zap.Error(err))
+			return status.Error(codes.Code(model.DBError), model.GetMsg(model.DBError))
+		}
+		return nil
+	})
+
 	// 5.返回
-	return nil, nil
+	return nil, err
 }

@@ -10,6 +10,7 @@ const (
 
 	NoLegalCaptcha    common.BusinessCode = 3000 // 验证码错误
 	VerifyCodeSuccess common.BusinessCode = 3001 // 验证码发送成功
+	CaptcgaNotExist   common.BusinessCode = 3002 // 验证码不存在
 
 	NoLegalEmail common.BusinessCode = 4001 // 邮箱不合法
 	EmailExist   common.BusinessCode = 4002 // 邮箱已存在
@@ -30,6 +31,7 @@ var CodeMsg = map[common.BusinessCode]string{
 	DBError:           "数据库错误",
 	NameExist:         "昵称已存在",
 	MobileExist:       "手机号已存在",
+	CaptcgaNotExist:   "验证码不存在",
 }
 
 func GetMsg(code common.BusinessCode) string {

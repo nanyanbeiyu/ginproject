@@ -13,4 +13,4 @@ EXPOSE 6379
 # 启动Redis服务
 CMD ["redis-server", "/usr/local/etc/redis/redis.conf"]
 
-#docker run --name gin-project-redis -d -p 6379:6379  -v D:/github_project/ginproject/project-common/docker/redis/redis-data:/var/lib/redis redis:latest
+#docker run --name gin-project-gredis -d -p 6379:6379  -v D:/github_project/ginproject/project-common/docker/gredis/gredis-data:/var/lib/gredis gredis:latest

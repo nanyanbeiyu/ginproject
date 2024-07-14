@@ -5,7 +5,7 @@ package user
 
 import (
 	common "carrygpc.com/project-common"
-	"carrygpc.com/project-user/internal/dao/redis"
+	"carrygpc.com/project-user/internal/dao/gredis"
 	"carrygpc.com/project-user/internal/repo"
 	"carrygpc.com/project-user/pkg/model"
 	"fmt"
@@ -21,7 +21,7 @@ type HandlerUser struct {
 
 func New() *HandlerUser {
 	return &HandlerUser{
-		cache: redis.Rc,
+		cache: gredis.Rc,
 	}
 }
 
@@ -42,7 +42,7 @@ func (*HandlerUser) getCaptcha(c *gin.Context) {
 	go func() {
 		time.Sleep(2 * time.Second)
 		zap.L().Info(fmt.Sprintf("发送验证码：REGISTER_%s : %s", mobile, code))
-		//5. 存储验证码 redis 时间15分钟
+		//5. 存储验证码 gredis 时间15分钟
 		err := h.cache.Put("REGISTER_"+mobile, code, 15*time.Minute)
 		if err != nil {
 			zap.L().Error(fmt.Sprintf("将验证码存入redis失败：REGISTER_%s : %s cause by: %v", mobile, code, err))

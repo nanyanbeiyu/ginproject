@@ -92,9 +92,9 @@ func (c *Conf) GetServeConf() *ServeConf {
 
 func (c *Conf) InitRedisConf() *redis.Options {
 	return &redis.Options{
-		Password: c.viper.GetString("redis.password"),
-		Addr:     c.viper.GetString("redis.addr"),
-		DB:       c.viper.GetInt("redis.db"),
+		Password: c.viper.GetString("gredis.password"),
+		Addr:     c.viper.GetString("gredis.addr"),
+		DB:       c.viper.GetInt("gredis.db"),
 	}
 }
 
